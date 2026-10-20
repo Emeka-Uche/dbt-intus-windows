@@ -1,0 +1,26 @@
+sources:
+  - name: sales_pipeline
+    database: INTUS_ANALYTICS
+    schema: SALES_PIPELINE
+    description: Raw CRM extracts loaded from CSV.
+    tables:
+      - name: src_sales_people
+        identifier: SRC_SALES_PEOPLE
+        columns:
+          - name: employee_id
+            data_tests: [unique, not_null]
+      - name: src_crm_opportunities
+        identifier: SRC_CRM_OPPORTUNITIES
+        columns:
+          - name: opportunity_id
+            data_tests: [unique, not_null]
+      - name: src_opportunity_stage_history
+        identifier: SRC_OPPORTUNITY_STAGE_HISTORY
+        columns:
+          - name: stage_event_id
+            data_tests: [unique, not_null]
+      - name: src_crm_tasks
+        identifier: SRC_CRM_TASKS
+        columns:
+          - name: task_id
+            data_tests: [unique, not_null]
