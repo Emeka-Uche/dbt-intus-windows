@@ -49,5 +49,5 @@ vars:
       +materialized: view
     intermediate:
       +materialized: view
-    marts:
+    mart:
       +materialized: table
