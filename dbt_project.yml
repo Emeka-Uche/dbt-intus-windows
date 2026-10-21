@@ -37,7 +37,7 @@ clean-targets:         # directories to be removed by `dbt clean`
 
 
 vars:
-  reporting_date: "2026-08-21"
+  reporting_date: "2026-08-21" 
   stale_after_days: 14
   recent_followup_days: 14
   raw_database: "ANALYTICS"   # database holding the raw schema
