@@ -1,0 +1,21 @@
+version: 2
+
+exposures:
+  - name: sales_pipeline_followup_dashboard
+    label: "Sales Pipeline Follow-up Dashboard"
+    type: dashboard
+    maturity: medium
+    url: "https://zoho-analytics.com/dashboards/sales-pipeline-followup"
+    description: >
+      One-page dashboard for Sales Operations to monitor active pipeline health,
+      identify stale opportunities, compare team leads, and work the follow-up queue.
+    depends_on:
+      - ref('fct_sales_pipeline_health')
+      - metric('eligible_active_pipeline_amount')
+      - metric('stale_pipeline_amount')
+      - metric('stale_opportunity_count')
+      - metric('stale_pipeline_rate')
+      - metric('pipeline_requiring_followup_amount')
+    owner:
+      name: "Sales Operations Analytics"
+      email: "sales-ops-analytics@intuswindowstest.com"

@@ -135,7 +135,7 @@ models:
         description: "Sum of amount for opportunities eligible for active pipeline. Filters: is_eligible_active = true."
         type: simple
         agg: sum
-        expr: amount
+        expr: opportunity_amount
         filter: "{{ Dimension('opportunity__is_eligible_active') }} = true"
 
       - name: stale_pipeline_amount
@@ -143,7 +143,7 @@ models:
         description: "Sum of amount for stale eligible opportunities. Filters: is_eligible_active = true AND is_stale = true."
         type: simple
         agg: sum
-        expr: amount
+        expr: opportunity_amount
         filter: "{{ Dimension('opportunity__is_eligible_active') }} = true AND {{ Dimension('opportunity__is_stale') }} = true"
 
       - name: stale_opportunity_count
@@ -151,7 +151,7 @@ models:
         description: "Count of stale eligible opportunities. Filters: is_eligible_active = true AND is_stale = true."
         type: simple
         agg: count
-        expr: opportunity_id
+        expr: OPPORTUNITY_ID
         filter: "{{ Dimension('opportunity__is_eligible_active') }} = true AND {{ Dimension('opportunity__is_stale') }} = true"
 
       - name: pipeline_requiring_followup_amount
@@ -159,7 +159,7 @@ models:
         description: "Sum of amount for eligible opportunities requiring follow-up. Filters: is_eligible_active = true AND requires_follow_up = true."
         type: simple
         agg: sum
-        expr: amount
+        expr: opportunity_amount
         filter: "{{ Dimension('opportunity__is_eligible_active') }} = true AND {{ Dimension('opportunity__requires_follow_up') }} = true"
 
 metrics:
