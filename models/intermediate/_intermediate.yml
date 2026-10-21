@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: int_opportunity_latest_stage
+    description: "One row per opportunity with the latest stage (tie-break by stage_event_id desc)."
+    columns:
+      - name: opportunity_id
+        data_tests:
+          - unique
+          - not_null
+
+  - name: int_opportunity_task_summary
+    description: "Task aggregates per opportunity. null opportunity_ids are excluded."
+    columns:
+      - name: opportunity_id
+        data_tests:
+          - unique
+          - not_null
