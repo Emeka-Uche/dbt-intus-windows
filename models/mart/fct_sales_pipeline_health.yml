@@ -1,0 +1,172 @@
+version: 2
+
+models:
+  - name: fct_sales_pipeline_health
+    description: >
+      One row per opportunity. Governed dataset for Sales Pipeline Follow-up Dashboard.
+      Includes eligibility, stale status, task counts, and follow-up requirements.
+      reporting_date defaults to 2026-08-21 via dbt var.
+    semantic_model:
+      enabled: true
+      name: sales_pipeline_health
+    agg_time_dimension: created_at
+    columns:
+      - name: opportunity_id
+        description: "Primary key. Unique opportunity identifier."
+        entity:
+          type: primary
+          name: opportunity
+        data_tests:
+          - unique
+          - not_null
+
+      - name: opportunity_name
+        description: "Name of opportunity"
+
+      - name: owner_name
+        description: "Full name of the opportunity owner. Null if owner_id has no match."
+        dimension:
+          type: categorical
+
+      - name: owner_role
+        description: "Role of the owner. Null for unmatched owner."
+
+      - name: owner_is_active
+        description: "Whether the owner is active. False for unmatched or inactive owners."
+        data_tests:
+          - not_null
+
+      - name: team_lead
+        description: "Team lead for the owner. Null for unmatched owner."
+        dimension:
+          type: categorical
+
+      - name: latest_stage
+        description: "Most recent stage name, deterministic by changed_at desc, stage_event_id desc."
+
+      - name: pipeline_category
+        description: "Derived from latest_stage: active, on_hold, won, lost, unknown."
+        dimension:
+          type: categorical
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['active', 'on_hold', 'won', 'lost', 'unknown']
+
+      - name: amount
+        description: "Opportunity amount in USD. May be null (OPP-010)."
+
+      - name: created_at
+        description: "Date opportunity was created."
+        granularity: day
+        dimension:
+          type: time
+        data_tests:
+          - not_null
+
+      - name: latest_stage_changed_at
+        description: "Timestamp of most recent stage change. Null if no stage history."
+
+      - name: days_in_current_stage
+        description: "Whole days between latest stage change date and reporting date."
+
+      - name: is_eligible_active
+        description: "True when not test, owner active, role is Rep or Manager, and category is active."
+        dimension:
+          type: categorical
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [true, false]
+
+      - name: is_stale
+        description: "True when eligible and days_in_current_stage > 14."
+        dimension:
+          type: categorical
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [true, false]
+
+      - name: open_task_count
+        description: "Count of tasks with status != Completed. 0 when no tasks."
+
+      - name: overdue_task_count
+        description: "Count of open tasks with due_date before reporting date. 0 when no tasks."
+
+      - name: latest_task_activity_at
+        description: "Latest completed_at if any completed task exists; otherwise latest created_at."
+
+      - name: days_since_last_task_activity
+        description: "Whole days between latest_task_activity_at and reporting date."
+
+      - name: has_recent_followup
+        description: "True when completed task within 14 days, or (if no completed tasks) latest task creation within 14 days."
+        dimension:
+          type: categorical
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [true, false]
+
+      - name: requires_follow_up
+        description: "True when eligible AND (stale OR overdue task OR no recent follow-up)."
+        dimension:
+          type: categorical
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [true, false]
+
+      - name: follow_up_reason
+        description: "Semicolon-separated reasons: Stale >14 days; Overdue task; No recent follow-up."
+
+      - name: reporting_date
+        description: "Date used for all time comparisons. Controlled by var('reporting_date')."
+
+    metrics:
+      - name: eligible_active_pipeline_amount
+        label: "Eligible Active Pipeline Amount"
+        description: "Sum of amount for opportunities eligible for active pipeline. Filters: is_eligible_active = true."
+        type: simple
+        agg: sum
+        expr: amount
+        filter: "{{ Dimension('opportunity__is_eligible_active') }} = true"
+
+      - name: stale_pipeline_amount
+        label: "Stale Pipeline Amount"
+        description: "Sum of amount for stale eligible opportunities. Filters: is_eligible_active = true AND is_stale = true."
+        type: simple
+        agg: sum
+        expr: amount
+        filter: "{{ Dimension('opportunity__is_eligible_active') }} = true AND {{ Dimension('opportunity__is_stale') }} = true"
+
+      - name: stale_opportunity_count
+        label: "Stale Opportunity Count"
+        description: "Count of stale eligible opportunities. Filters: is_eligible_active = true AND is_stale = true."
+        type: simple
+        agg: count
+        expr: opportunity_id
+        filter: "{{ Dimension('opportunity__is_eligible_active') }} = true AND {{ Dimension('opportunity__is_stale') }} = true"
+
+      - name: pipeline_requiring_followup_amount
+        label: "Pipeline Requiring Follow-up Amount"
+        description: "Sum of amount for eligible opportunities requiring follow-up. Filters: is_eligible_active = true AND requires_follow_up = true."
+        type: simple
+        agg: sum
+        expr: amount
+        filter: "{{ Dimension('opportunity__is_eligible_active') }} = true AND {{ Dimension('opportunity__requires_follow_up') }} = true"
+
+metrics:
+  - name: stale_pipeline_rate
+    label: "Stale Pipeline Rate"
+    description: "Stale Pipeline Amount divided by Eligible Active Pipeline Amount. Ratio of two simple metrics."
+    type: ratio
+    numerator: stale_pipeline_amount
+    denominator: eligible_active_pipeline_amount
+    
