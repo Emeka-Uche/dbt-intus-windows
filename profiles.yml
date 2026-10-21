@@ -1,0 +1,16 @@
+# Use with:  export DBT_PROFILES_DIR=.   (run from the project root)
+sales_pipeline:
+  target: dev
+  outputs:
+
+    # Your real warehouse. dbt reads ANALYTICS.SALES_PIPELINE and writes to its own schema.
+    dev:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"      # e.g. xy12345.eu-west-1
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"    # or switch to key-pair / SSO auth
+      role: "{{ env_var('SNOWFLAKE_ROLE') }}"
+      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE') }}"
+      database: INTUS_ANALYTICS
+      schema: DBT_EUCHE
+      threads: 4
