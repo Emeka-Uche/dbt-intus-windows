@@ -1,0 +1,91 @@
+models:
+  - name: stg_sales_people
+    description: Sales staff, cleaned and typed. One row per employee.
+    columns:
+      - name: employee_id
+        description: Employee key.
+        data_tests: [unique, not_null]
+      - name: employee_name
+        description: Full name.
+      - name: owner_role
+        description: Job title. Only Sales Representative and Sales Manager can own eligible pipeline.
+      - name: team_lead
+        description: Team lead the employee reports to.
+      - name: is_owner_active
+        description: Whether the employee is currently active.
+        data_tests:
+          - not_null
+
+  - name: stg_crm_opportunities
+    description: CRM opportunities, cleaned and typed. One row per opportunity.
+    columns:
+      - name: opportunity_id
+        description: Opportunity key.
+        data_tests: [unique, not_null]
+      - name: owner_id
+        description: >
+          Owner employee id. Can point to an employee that does not exist (OPP-013 -> E404);
+          that is reported as a warning here and handled as "ineligible" in the mart.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_sales_people')
+                field: employee_id
+              config:
+                severity: warn
+      - name: opportunity_amount
+        description: Deal amount. Null for OPP-010; the row is kept, and sums ignore it.
+      - name: created_at
+        description: Creation timestamp.
+        data_tests:
+          - not_null
+      - name: is_test_record
+        description: True for test data that must be excluded from the pipeline.
+
+  - name: stg_opportunity_stage_history
+    description: Stage change events. One row per event.
+    columns:
+      - name: stage_event_id
+        description: Event key; also the tie-breaker for events with identical timestamps.
+        data_tests: [unique, not_null]
+      - name: opportunity_id
+        description: Opportunity the event belongs to.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_crm_opportunities')
+                field: opportunity_id
+      - name: stage_name
+        description: Stage entered. Values outside the known list (e.g. Discovery) map to 'unknown' downstream.
+      - name: changed_at
+        description: When the stage was entered.
+        data_tests:
+          - not_null
+
+  - name: stg_crm_tasks
+    description: CRM tasks, cleaned and typed. One row per task.
+    columns:
+      - name: task_id
+        description: Task key.
+        data_tests: [unique, not_null]
+      - name: opportunity_id
+        description: >
+          Parent opportunity. Null for orphan tasks (T025, T026), which are excluded
+          from the task rollup.
+        data_tests:
+          - not_null:
+              config:
+                severity: warn
+      - name: task_status
+        description: Task status. Anything other than 'Completed' counts as open.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Completed', 'In Progress', 'Not Started']
+              config:
+                severity: warn
+      - name: due_date
+        description: Due date. Null for T014; a task with no due date is never overdue.
+      - name: completed_at
+        description: Completion timestamp. Null while the task is open.
