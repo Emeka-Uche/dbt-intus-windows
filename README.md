@@ -41,7 +41,7 @@ The project was validated using `dbt build`, `dbt parse`, and dbt Semantic Layer
 3. To view documentation, run:
 
    ```bash
-dbt docs serve
+    dbt docs serve
    ```
 4. Run:
    ```bash
