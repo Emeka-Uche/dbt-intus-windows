@@ -38,15 +38,16 @@ The project was validated using `dbt build`, `dbt parse`, and dbt Semantic Layer
     source .env
     dbt debug
     ```
-3. To view documentation, run:
-
-   ```bash
-    dbt docs serve
-   ```
-4. Run:
+3. Run:
    ```bash
    dbt parse
    dbt build
+   dbt docs generate
+   ```
+4. To view documentation, run:
+
+   ```bash
+    dbt docs serve
    ```
 ## Business Value
 
