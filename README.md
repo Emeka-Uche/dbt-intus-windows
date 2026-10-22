@@ -31,6 +31,7 @@ The project was validated using `dbt build`, `dbt parse`, and dbt Semantic Layer
 ## Running the Project
 
 1. Load the source data into Snowflake.
+<<<<<<< HEAD
 2. Configure your dbt connection. - 
     
     ```bash
@@ -43,11 +44,19 @@ The project was validated using `dbt build`, `dbt parse`, and dbt Semantic Layer
 dbt docs serve
    ```
 4. Run:
+=======
+2. Configure your dbt connection.
+3. Run:
+>>>>>>> f7888799bfef821d885b2e4b79160e8721458df0
 
    ```bash
    dbt parse
    dbt build
    ```
+<<<<<<< HEAD
+=======
+
+>>>>>>> f7888799bfef821d885b2e4b79160e8721458df0
 ## Business Value
 
 The solution turns CRM data into actionable sales insights, helping teams identify at-risk opportunities and focus follow-up efforts where they matter most.
